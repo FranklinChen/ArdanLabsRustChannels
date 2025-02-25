@@ -1,0 +1,24 @@
+[package]
+name = "code"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+
+[workspace.dependencies]
+tokio = { version = "1.43.0", features = ["full"] }
+flume = { version = "0.11.1" }
+
+[workspace]
+members = [
+    "ex01_simple_channel",
+    "ex02_bounded_mpsc",
+    "ex03_mpsc_timing",
+    "ex04_async_mpsc",
+    "ex05_async_uncontended",
+    "ex06_mpmc_threaded",
+    "ex07_mpmc_async",
+    "ex08_actor",
+    "ex09_select",
+    "ex10_sync_async"
+, "ex11_cli"]
