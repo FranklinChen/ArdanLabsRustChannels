@@ -3,7 +3,7 @@ enum ActorMessage {
     GetData(tokio::sync::oneshot::Sender<u64>),
 }
 
-async fn actor(mut rx: flume::Receiver<ActorMessage>) {
+async fn actor(rx: flume::Receiver<ActorMessage>) {
     let mut data = 0u64;
     loop {
         match rx.recv_async().await {
@@ -22,7 +22,9 @@ async fn actor(mut rx: flume::Receiver<ActorMessage>) {
 
 async fn query_data(tx: flume::Sender<ActorMessage>) -> u64 {
     let (oneshot_tx, oneshot_rx) = tokio::sync::oneshot::channel();
-    tx.send_async(ActorMessage::GetData(oneshot_tx)).await.unwrap();
+    tx.send_async(ActorMessage::GetData(oneshot_tx))
+        .await
+        .unwrap();
     oneshot_rx.await.unwrap()
 }
 

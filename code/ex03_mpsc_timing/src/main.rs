@@ -2,7 +2,7 @@ use std::io::Write;
 use std::time::Instant;
 
 enum Message {
-    TimeMe(Instant)
+    TimeMe(Instant),
 }
 
 fn main() {
@@ -11,14 +11,14 @@ fn main() {
 
     // Send lots of data
     let mut handles = Vec::new();
-    for t in 0 .. 64 {
+    for t in 0..64 {
         // Per-thread sender
         let mut timings = Vec::with_capacity(1024);
         let my_tx = tx.clone();
         handles.push(std::thread::spawn(move || {
-            for i in 0 .. 1024 {
+            for _i in 0..1024 {
                 let now = Instant::now();
-                my_tx.send(Message::TimeMe(now.clone())).unwrap();
+                my_tx.send(Message::TimeMe(now)).unwrap();
                 let elapsed = now.elapsed();
                 timings.push(elapsed);
             }
@@ -41,7 +41,7 @@ fn main() {
 
     // Receive until the channel closes
     let mut receive_times = Vec::with_capacity(64 * 1024);
-    while let Some(msg) = rx.recv().ok() {
+    while let Ok(msg) = rx.recv() {
         match msg {
             Message::TimeMe(sent) => receive_times.push(sent.elapsed()),
         }

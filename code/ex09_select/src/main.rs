@@ -6,7 +6,7 @@ enum Sensor {
 }
 
 enum Command {
-    Stop
+    Stop,
 }
 
 async fn sensor(tx: Sender<Sensor>) {

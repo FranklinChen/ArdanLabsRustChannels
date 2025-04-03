@@ -14,7 +14,7 @@ fn main() {
     // Spawn 10 SYNCHRONOUS threads
     for _ in 0..10 {
         let tx = tx.clone();
-        std::thread::spawn(move|| {
+        std::thread::spawn(move || {
             for i in 0..10 {
                 tx.blocking_send(i).unwrap();
             }

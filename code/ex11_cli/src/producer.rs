@@ -1,5 +1,3 @@
-use std::time::Duration;
-use rand::RngCore;
 use crate::reporter::Report;
 
 /// Layer 1 data producer. Emits messages as fast as it can, and

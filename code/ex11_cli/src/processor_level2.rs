@@ -1,5 +1,5 @@
-use std::time::Duration;
 use crate::PROCESSING_DELAY_10TH_SECONDS;
+use std::time::Duration;
 
 pub fn processor_layer2(
     from_layer1: flume::Receiver<Box<Vec<u64>>>,
@@ -9,7 +9,8 @@ pub fn processor_layer2(
     let mut start = std::time::Instant::now();
     while let Ok(_batch) = from_layer1.recv() {
         // Simulate processing time
-        let processing_delay = PROCESSING_DELAY_10TH_SECONDS.load(std::sync::atomic::Ordering::Relaxed) as f32 / 10.0;
+        let processing_delay =
+            PROCESSING_DELAY_10TH_SECONDS.load(std::sync::atomic::Ordering::Relaxed) as f32 / 10.0;
         std::thread::sleep(Duration::from_secs_f32(processing_delay));
 
         count += 1;

@@ -1,5 +1,5 @@
-use flume::Receiver;
 use crate::BATCH_SIZE;
+use flume::Receiver;
 
 pub fn processor_1(
     id: usize,

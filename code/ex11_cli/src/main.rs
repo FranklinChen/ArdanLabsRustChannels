@@ -1,13 +1,12 @@
-use std::sync::atomic::{AtomicU32, AtomicUsize};
-use std::sync::Mutex;
-use arr_macro::arr;
 use crate::gui::MyApp;
+use arr_macro::arr;
+use std::sync::atomic::{AtomicU32, AtomicUsize};
 
-mod producer;
-mod reporter;
+mod gui;
 mod processor_level1;
 mod processor_level2;
-mod gui;
+mod producer;
+mod reporter;
 
 const PRODUCER_CHANNEL_SIZE: usize = 500_000;
 const BATCH_CHANNEL_SIZE: usize = 500_000;
@@ -63,18 +62,16 @@ fn main() {
     drop(graph_lock);
 
     // Capacity Monitor
-    std::thread::spawn(move || {
-        loop {
-            let producer_len = producer_tx.len();
-            let level1_len = level1_tx.len();
-            let producer_cap = producer_tx.capacity().unwrap_or(1);
-            let level1_cap = level1_tx.capacity().unwrap_or(1);
-            let producer_percent = ((producer_len as f32 / producer_cap as f32) * 100.0) as u32;
-            let level1_percent = ((level1_len as f32 / level1_cap as f32) * 100.0) as u32;
-            PRODUCER_PERCENT.store(producer_percent, std::sync::atomic::Ordering::Relaxed);
-            LAYER1_PERCENT.store(level1_percent, std::sync::atomic::Ordering::Relaxed);
-            std::thread::sleep(std::time::Duration::from_secs_f32(0.25));
-        }
+    std::thread::spawn(move || loop {
+        let producer_len = producer_tx.len();
+        let level1_len = level1_tx.len();
+        let producer_cap = producer_tx.capacity().unwrap_or(1);
+        let level1_cap = level1_tx.capacity().unwrap_or(1);
+        let producer_percent = ((producer_len as f32 / producer_cap as f32) * 100.0) as u32;
+        let level1_percent = ((level1_len as f32 / level1_cap as f32) * 100.0) as u32;
+        PRODUCER_PERCENT.store(producer_percent, std::sync::atomic::Ordering::Relaxed);
+        LAYER1_PERCENT.store(level1_percent, std::sync::atomic::Ordering::Relaxed);
+        std::thread::sleep(std::time::Duration::from_secs_f32(0.25));
     });
 
     // Visualization
@@ -85,8 +82,6 @@ fn main() {
     let _ = eframe::run_native(
         "Channel Data-Flow Visualizer",
         options,
-        Box::new(|cc| {
-            Ok(Box::<MyApp>::default())
-        }),
+        Box::new(|_cc| Ok(Box::<MyApp>::default())),
     );
 }

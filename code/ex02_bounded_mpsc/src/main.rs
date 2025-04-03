@@ -8,12 +8,14 @@ fn main() {
 
     // Send lots of data
     let mut handles = Vec::new();
-    for t in 0 .. 64 {
+    for t in 0..64 {
         // Per-thread sender
         let my_tx = tx.clone();
         handles.push(std::thread::spawn(move || {
-            for i in 0 .. 1024 {
-                my_tx.send(Message::Print(format!("Thread: {}, Message: {}\n", t, i))).unwrap();
+            for i in 0..1024 {
+                my_tx
+                    .send(Message::Print(format!("Thread: {}, Message: {}\n", t, i)))
+                    .unwrap();
             }
         }));
     }
@@ -22,7 +24,7 @@ fn main() {
     drop(tx);
 
     // Receive until the channel closes
-    while let Some(msg) = rx.recv().ok() {
+    while let Ok(msg) = rx.recv() {
         match msg {
             Message::Print(s) => print!("{}", s),
         }

@@ -1,16 +1,16 @@
 use std::io::Write;
 use std::time::Instant;
-use tokio::sync::mpsc::{Receiver, Sender};
+use tokio::sync::mpsc::Sender;
 
 enum Message {
-    TimeMe(Instant)
+    TimeMe(Instant),
 }
 
 async fn per_task_sender(t: i32, my_tx: Sender<Message>) {
     let mut timings = Vec::with_capacity(1024);
-    for _ in 0 .. 1024 {
+    for _ in 0..1024 {
         let now = Instant::now();
-        my_tx.send(Message::TimeMe(now.clone())).await.unwrap();
+        my_tx.send(Message::TimeMe(now)).await.unwrap();
         let elapsed = now.elapsed();
         timings.push(elapsed);
     }
@@ -32,7 +32,7 @@ async fn main() {
     let (tx, mut rx) = tokio::sync::mpsc::channel(65536);
 
     // Send lots of data
-    for t in 0 .. 64 {
+    for t in 0..64 {
         let my_tx = tx.clone();
         tokio::spawn(per_task_sender(t, my_tx));
     }

@@ -1,19 +1,18 @@
-use std::sync::Mutex;
+use crate::{
+    BATCH_SIZE, LAYER1_PERFORMANCE, LAYER2_PERFORMANCE, NUM_LEVEL1_PROCESSORS,
+    NUM_LEVEL2_PROCESSORS, NUM_PRODUCERS, PRODUCER_PERFORMANCE,
+};
 use eframe::emath::Pos2;
 use egui_plot::{Bar, BarChart, Line, Plot, PlotPoints};
-use crate::{BATCH_SIZE, LAYER1_PERFORMANCE, LAYER2_PERFORMANCE, NUM_LEVEL1_PROCESSORS, NUM_LEVEL2_PROCESSORS, NUM_PRODUCERS, PRODUCER_PERFORMANCE};
+use std::sync::Mutex;
 
 pub static PRODUCER_HISTORY: Mutex<Vec<Vec<f32>>> = Mutex::new(Vec::new());
 pub static LAYER1_HISTORY: Mutex<Vec<Vec<f32>>> = Mutex::new(Vec::new());
 pub static LAYER2_HISTORY: Mutex<Vec<Vec<f32>>> = Mutex::new(Vec::new());
 
+#[derive(Default)]
 pub struct MyApp {}
 
-impl Default for MyApp {
-    fn default() -> Self {
-        Self {}
-    }
-}
 
 impl eframe::App for MyApp {
     fn update(&mut self, ctx: &egui::Context, _frame: &mut eframe::Frame) {
@@ -24,30 +23,22 @@ impl eframe::App for MyApp {
             .fixed_pos(Pos2::new(230.0, 10.0))
             .show(ctx, |ui| {
                 let percent = crate::PRODUCER_PERCENT.load(std::sync::atomic::Ordering::Relaxed);
-                let plot = Plot::new("Producer Queue")
-                    .height(700.0)
-                    .width(50.0);
+                let plot = Plot::new("Producer Queue").height(700.0).width(50.0);
                 plot.show(ui, |plot_ui| {
-                    let bars = vec![
-                        Bar::new(1.0, percent as f64),
-                    ];
+                    let bars = vec![Bar::new(1.0, percent as f64)];
                     let bars = BarChart::new(bars);
                     plot_ui.bar_chart(bars)
                 });
-        });
+            });
 
         egui::Window::new("Processor Queue")
             .title_bar(false)
             .fixed_pos(Pos2::new(530.0, 10.0))
             .show(ctx, |ui| {
                 let percent = crate::LAYER1_PERCENT.load(std::sync::atomic::Ordering::Relaxed);
-                let plot = Plot::new("Proc Queue")
-                    .height(700.0)
-                    .width(50.0);
+                let plot = Plot::new("Proc Queue").height(700.0).width(50.0);
                 plot.show(ui, |plot_ui| {
-                    let bars = vec![
-                        Bar::new(1.0, percent as f64),
-                    ];
+                    let bars = vec![Bar::new(1.0, percent as f64)];
                     let bars = BarChart::new(bars);
                     plot_ui.bar_chart(bars)
                 });
@@ -68,11 +59,13 @@ impl eframe::App for MyApp {
                 let display = PRODUCER_PERFORMANCE[i].load(std::sync::atomic::Ordering::Relaxed);
                 let display = format!("Messages per second: {}", display);
                 ui.label(&display);
-                let plot = Plot::new(&graph_title)
-                    .height(75.0)
-                    .width(200.0);
+                let plot = Plot::new(&graph_title).height(75.0).width(200.0);
                 plot.show(ui, |plot_ui| {
-                    let points: Vec<[f64; 2]> = graph_lock[i].iter().enumerate().map(|(x, y)| [x as f64, *y as f64]).collect();
+                    let points: Vec<[f64; 2]> = graph_lock[i]
+                        .iter()
+                        .enumerate()
+                        .map(|(x, y)| [x as f64, *y as f64])
+                        .collect();
                     let line = Line::new(PlotPoints::new(points));
                     plot_ui.line(line);
                 });
@@ -95,11 +88,13 @@ impl eframe::App for MyApp {
                 let display = LAYER1_PERFORMANCE[i].load(std::sync::atomic::Ordering::Relaxed);
                 let display = format!("Messages per second: {}", display);
                 ui.label(&display);
-                let plot = Plot::new(&graph_title)
-                    .height(75.0)
-                    .width(200.0);
+                let plot = Plot::new(&graph_title).height(75.0).width(200.0);
                 plot.show(ui, |plot_ui| {
-                    let points: Vec<[f64; 2]> = graph_lock[i].iter().enumerate().map(|(x, y)| [x as f64, *y as f64]).collect();
+                    let points: Vec<[f64; 2]> = graph_lock[i]
+                        .iter()
+                        .enumerate()
+                        .map(|(x, y)| [x as f64, *y as f64])
+                        .collect();
                     let line = Line::new(PlotPoints::new(points));
                     plot_ui.line(line);
                 });
@@ -123,11 +118,13 @@ impl eframe::App for MyApp {
                 let display = format!("Messages per second: {}", display);
                 ui.label(&display);
 
-                let plot = Plot::new(&graph_title)
-                    .height(75.0)
-                    .width(200.0);
+                let plot = Plot::new(&graph_title).height(75.0).width(200.0);
                 plot.show(ui, |plot_ui| {
-                    let points: Vec<[f64; 2]> = graph_lock[i].iter().enumerate().map(|(x, y)| [x as f64, *y as f64]).collect();
+                    let points: Vec<[f64; 2]> = graph_lock[i]
+                        .iter()
+                        .enumerate()
+                        .map(|(x, y)| [x as f64, *y as f64])
+                        .collect();
                     let line = Line::new(PlotPoints::new(points));
                     plot_ui.line(line);
                 });
@@ -150,14 +147,20 @@ impl eframe::App for MyApp {
                         BATCH_SIZE.store(batch_size - 32, std::sync::atomic::Ordering::Relaxed);
                         ctx.request_repaint();
                     }
-                    let delay = crate::PROCESSING_DELAY_10TH_SECONDS.load(std::sync::atomic::Ordering::Relaxed);
-                    ui.label(format!("Processing Delay: {:.1} seconds", delay as f32 / 10.0));
+                    let delay = crate::PROCESSING_DELAY_10TH_SECONDS
+                        .load(std::sync::atomic::Ordering::Relaxed);
+                    ui.label(format!(
+                        "Processing Delay: {:.1} seconds",
+                        delay as f32 / 10.0
+                    ));
                     if ui.button("+").clicked() {
-                        crate::PROCESSING_DELAY_10TH_SECONDS.store(delay + 1, std::sync::atomic::Ordering::Relaxed);
+                        crate::PROCESSING_DELAY_10TH_SECONDS
+                            .store(delay + 1, std::sync::atomic::Ordering::Relaxed);
                         ctx.request_repaint();
                     }
                     if ui.button("-").clicked() && delay > 0 {
-                        crate::PROCESSING_DELAY_10TH_SECONDS.store(delay - 1, std::sync::atomic::Ordering::Relaxed);
+                        crate::PROCESSING_DELAY_10TH_SECONDS
+                            .store(delay - 1, std::sync::atomic::Ordering::Relaxed);
                         ctx.request_repaint();
                     }
                 });
