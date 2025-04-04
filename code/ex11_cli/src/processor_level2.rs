@@ -2,7 +2,7 @@ use crate::PROCESSING_DELAY_10TH_SECONDS;
 use std::time::Duration;
 
 pub fn processor_layer2(
-    from_layer1: flume::Receiver<Box<Vec<u64>>>,
+    from_layer1: flume::Receiver<Vec<u64>>,
     report: flume::Sender<crate::reporter::Report>,
 ) {
     let mut count = 0;
